@@ -19,13 +19,11 @@ const mysqlPassword = process.env.MYSQL_PASSWORD;
 const mongoHost = process.env.MONGO_HOST;
 const mongoDBName = process.env.MONGO_DATABASE;
 const mongoPort = process.env.MONGO_PORT || '27017';
-const mongoUser = process.env.MONGO_INITDB_USERNAME;
+const mongoUser = process.env.MONGO_INITDB_USERNAME; // issues grabbing these from .env
 const mongoPassword = process.env.MONGO_INITDB_PASSWORD;
-const mongoRootName = process.env.MONGO_ROOT_USERNAME;
-const mongoRootPass = process.env.MONGO_ROOT_PASSWORD;
-console.log("Mongo Root Name: " + mongoRootName);
-console.log("Mongo Root Pass: " + mongoRootPass);
-const mongoURL = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoDBName}?authSource=${mongoDBName}&w=1`
+const mongoRootName = 'mongoROOT';//process.env.MONGO_ROOT_USERNAME;// keep getting UNDEFINED
+const mongoRootPass = 'password1'; //process.env.MONGO_ROOT_PASSWORD; 
+const mongoURL = `mongodb://${mongoRootName}:${mongoRootPass}@${mongoHost}:${mongoPort}/${mongoDBName}?authSource=${mongoDBName}&w=1`
 
 console.log("== Mongo URL:", mongoURL);
 
