@@ -23,8 +23,7 @@ const mongoUser = process.env.MONGO_INITDB_USERNAME; // issues grabbing these fr
 const mongoPassword = process.env.MONGO_INITDB_PASSWORD;
 const mongoRootName = 'mongoROOT';//process.env.MONGO_ROOT_USERNAME;// keep getting UNDEFINED
 const mongoRootPass = 'password1'; //process.env.MONGO_ROOT_PASSWORD; 
-const mongoURL = `mongodb://${mongoRootName}:${mongoRootPass}@${mongoHost}:${mongoPort}/${mongoDBName}?authSource=${mongoDBName}&w=1`
-
+const mongoURL = `mongodb://${mongoRootName}:${mongoRootPass}@${mongoHost}:${mongoPort}/${mongoDBName}?authSource=admin`
 console.log("== Mongo URL:", mongoURL);
 
 const maxMySQLConnections = 10;
