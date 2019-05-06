@@ -57,8 +57,8 @@ function getAmiiboPage(page, totalCount, mysqlPool){
 }
 
 /*
- * MySQL query to return Amiibo of specified id 
- * Returns a promise that resolves to specified Amiibo
+ * MySQL query to return Amiibo
+ * Returns a promise that resolves to  Amiibo
  */
 
 function getAmiibo(mysqlPool){
@@ -72,6 +72,8 @@ function getAmiibo(mysqlPool){
         });
     });
 }
+
+
 function getAmiiboByID(id, mysqlPool){
     return new Promise((resolve, reject) => {
         mysqlPool.query('SELECT * FROM amiibo WHERE id = ?', [id], function(err, results){
@@ -79,6 +81,19 @@ function getAmiiboByID(id, mysqlPool){
                 reject(err);
             }else{
                 resolve(results[0]);
+            }
+        });
+    });
+}
+
+
+function deleteAmiiboByID(amiiboID, mysqlPool){
+    return new Promise((resolve, reject)=>{
+        mysqlPool.query('DELETE FROM amiibo WHERE id = ?', [ amiiboID ], function(err, result){
+            if(err){
+                reject(err);
+            }else{
+                resolve(result.affectedRows > 0);
             }
         });
     });
@@ -115,6 +130,7 @@ function getAmiiboBySeries(series, mysqlPool){
         });
     });
 }
+
 
 router.get('/', function(req, res){
     const mysqlPool = req.app.locals.mysqlPool;
@@ -162,9 +178,10 @@ router.get('/:id', function(req, res){
     });
 });
 
-router.get('/:name', function(req, res){
+router.get('/name/:name', function(req, res){
     const mysqlPool = req.app.locals.mysqlPool;
-    getAmiiboCount(mysqlPool)
+    const name = toString(req.params.name);
+    getAmiiboByName(name, mysqlPool)
     .then((amiibo) => {
         if(amiibo){
             res.status(200).json(amiibo);
@@ -174,7 +191,8 @@ router.get('/:name', function(req, res){
     })
     .catch((err) =>{
         res.status(500).json({
-            error: "Unable to fetch Amiibo by Name. Please try again later."
+            error: "Unable to fetch Amiibo by Name. Please try again later.",
+            err: err
         });
     });
 });
@@ -192,6 +210,25 @@ router.get('/:series', function(req, res){
     .catch((err) =>{
         res.status(500).json({
             error: "Unable to fetch Amiibo by series. Please try again later."
+        });
+    });
+});
+
+router.delete('/:id', function(req, res, next){
+    const mysqlPool = req.app.locals.mysqlPool;
+    const id = parseInt(req.params.id);
+    deleteAmiiboByID(id, mysqlPool)
+    .then((deleteSuccessful)=>{
+        if(deleteSuccessful){
+            res.status(204).end();
+        }else{
+            next();
+        }
+    })
+    .catch((err) => {
+        res.status(500).json({
+            error: "Unable to delete amiibo. Please try again later.",
+            err: err
         });
     });
 });
