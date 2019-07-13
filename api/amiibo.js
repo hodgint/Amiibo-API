@@ -197,9 +197,10 @@ router.get('/name/:name', function(req, res){
     });
 });
 
-router.get('/:series', function(req, res){
+router.get('/series/:series', function(req, res){
     const mysqlPool = req.app.locals.mysqlPool;
-    getAmiiboCount(mysqlPool)
+    const series = toString(req.params.series);
+    getAmiiboBySeries(series, mysqlPool)
     .then((amiibo) => {
         if(amiibo){
             res.status(200).json(amiibo);
@@ -209,7 +210,8 @@ router.get('/:series', function(req, res){
     })
     .catch((err) =>{
         res.status(500).json({
-            error: "Unable to fetch Amiibo by series. Please try again later."
+            error: "Unable to fetch Amiibo by Series. Please try again later.",
+            err: err
         });
     });
 });
@@ -233,4 +235,25 @@ router.delete('/:id', function(req, res, next){
     });
 });
 
+/*
+* Gets amiibo with given list of ids.
+* Used to get owned amiibo of a user.
+*/
+function getUserAmiiboByList(IDList, mysqlPool){
+    return new Promise((resolve, reject)=> {
+        mysqlPool.query(
+            'SELECT * FROM amiibo WHERE id in ?', 
+            IDList,
+            function(err, results){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(results);
+                }
+            }
+        );
+    });
+}
+
 exports.router = router;
+exports.getUserAmiiboByList = getUserAmiiboByList;

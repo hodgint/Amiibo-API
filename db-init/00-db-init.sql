@@ -26,3 +26,14 @@ INSERT INTO amiibo VALUES (1,'Mario', 'Super Smash Brothers', '11/21/2014', 'mar
 INSERT INTO amiibo VALUES (2,'peach', 'Super Smash Brothers', '11/21/2014', 'peachsmash.png','peachSSB.bin');
 INSERT INTO amiibo VALUES (3,'Yoshi', 'Super Smash Brothers', '11/21/2014', 'yoshismash.png','yoshiSSB.bin');
 INSERT INTO amiibo VALUES (4,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (5,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (6,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (7,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (8,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (9,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (10,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (11,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (12,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (13,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (14,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
+INSERT INTO amiibo VALUES (15,'Donkey Kong', 'Super Smash Brothers', '11/21/2014', 'dksmash.png','dkSSB.bin');
