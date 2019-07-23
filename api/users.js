@@ -40,6 +40,18 @@ function getUserById(userID, mongoDB, includePassword){
     });
 }
 
+function getUserByUsername(Username, mongoDB, includePassword){
+  const userCollection = mongocDB.collection('users');
+  const projection = includePassword ? {} : {Password: 0};
+  return userCollection
+  .find({Username: username})
+  .project(projection)
+  .toArray()
+  .then((results) => {
+      return Promise.resolve(results[0]);
+  });
+}
+
 //router.get('/:userID/amiibo', requierAuthentication, function(req, res){
   //  const mysqlPool = req.app.locals.mysqlPool;
    // const userID = parseInt(req.params.userID);
