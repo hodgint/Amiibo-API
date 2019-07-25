@@ -1,8 +1,7 @@
 const router = require('express').Router();
 const objectId = require('mongodb').objectId;
 const bcyrpt = require('bcryptjs');
-
-const { generateAuthToken, requireAuthentication} = require('../lib/auth');
+const {generateAuthToken, requireAuthentication} = require('../lib/auth');
 const {getUserAmiiboByList} = require('./amiibo');
 
 function validateUserObject(user){
@@ -18,6 +17,7 @@ function addUser(user, mongoDB){
             userID: user.userID,
             username: user.username,
             email: user.email,
+            amiibo: [],
             password: passwordHash
         }
         var userCollection = mongoDB.collection('users');
@@ -28,11 +28,29 @@ function addUser(user, mongoDB){
     });
 }
 
-function getUserById(userID, mongoDB, includePassword){
-    const userCollection = mongocDB.collection('users');
+function updateUserAmiiboByUsername(user, amiiboID, mongoDB){
+  return new Promise((resolve, reject) =>{
+    mongoDB.collection('users').updateOne(
+      {
+        username: user
+      },
+      {
+        $addToSet: {amiibo: amiiboID}
+      },
+      function(err, res){
+        if(err){
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+}
+
+function getUserByID(userID, mongoDB, includePassword){
+    const userCollection = mongoDB.collection('users');
     const projection = includePassword ? {} : {Password: 0};
     return userCollection
-    .find({userID: userId})
+    .find({userID: userID})
     .project(projection)
     .toArray()
     .then((results) => {
@@ -41,10 +59,10 @@ function getUserById(userID, mongoDB, includePassword){
 }
 
 function getUserByUsername(Username, mongoDB, includePassword){
-  const userCollection = mongocDB.collection('users');
+  const userCollection = mongoDB.collection('users');
   const projection = includePassword ? {} : {Password: 0};
   return userCollection
-  .find({Username: username})
+  .find({username: Username})
   .project(projection)
   .toArray()
   .then((results) => {
@@ -52,16 +70,67 @@ function getUserByUsername(Username, mongoDB, includePassword){
   });
 }
 
-//router.get('/:userID/amiibo', requierAuthentication, function(req, res){
-  //  const mysqlPool = req.app.locals.mysqlPool;
-   // const userID = parseInt(req.params.userID);
-//})
+function getUserByEmail(email, mongoDB, includePassword){
+  const userCollection = mongoDB.collection('users');
+  const projection = includePassword ? {} : {Password: 0};
+  return userCollection
+  .find({email: email})
+  .project(projection)
+  .toArray()
+  .then((results) => {
+      return Promise.resolve(results[0]);
+  });
+}
+
+router.get('/:userID/amiibo', function(req, res){
+    const mongoDB = req.app.locals.mongoDB;
+    const mysqlPool = req.app.locals.mysqlPool;
+    const userID = parseInt(req.params.userID);
+    getUserByID(userID, mongoDB, false)
+    .then((results) => {
+      getUserAmiiboByList(results, mysqlPool)
+      .then((amiibo) => {
+        if(amiibo){
+          res.status.json({amiibo: amiibo});
+        }else{
+          next();
+        }
+      })
+      .catch((err) => {
+        res.status(500).json({
+          error: "Unable to fetch amiibo. Please try again later.",
+          err: err
+        });
+      });
+    })
+    
+});
+
+router.post('/:username/amiibo', function(req, res){
+  const mongoDB = req.app.locals.mongoDB;
+  const username = req.params.username;
+  console.log("Username: " + username);
+  const amiiboID = req.body.amiiboID;
+  updateUserAmiiboByUsername(username, amiiboID, mongoDB)
+  .then((results) => {
+    if(results){
+      res.status.json({results: results});
+    }else{
+      next();
+    }
+  })
+  .catch((err) => {
+    res.status(500).json({
+      error: "Unable to add amiibo. Please try again later",
+      err: err
+    });
+  });
+});
 
 
 router.post('/', function(req, res){
     const mongoDB = req.app.locals.mongoDB;
     if(validateUserObject(req.body)){
-        console.log(req.body);
         addUser(req.body, mongoDB)
         .then((id) => {
             res.status(201).json({
@@ -73,7 +142,7 @@ router.post('/', function(req, res){
         })
         .catch((err) => {
             res.status(500).json({
-                error: "Failed to insert new user. " + err
+                error: "Failed to insert new user."
             });
         });
     } else{
@@ -84,21 +153,21 @@ router.post('/', function(req, res){
 });
 
 router.post('/login', function(req, res){
+    var id; 
     const mongoDB = req.app.locals.mongoDB;
-    if (req.body && req.body.userID && req.body.password) {
-      getUserByID(req.body.userID, mongoDB, true)
+    if (req.body && req.body.username && req.body.password) {
+      getUserByUsername(req.body.username, mongoDB, true)
         .then((user) => {
-          console.log(user);
-
           if (user){
-            return bcrypt.compare(req.body.password, user.password);
+            id = user.id;
+            return bcyrpt.compare(req.body.password, user.password);
           } else {
             return Promise.reject(401);
           }
         })
         .then((loginSuccessful) => {
           if (loginSuccessful) {
-            return generateAuthToken(req.body.userID);
+            return generateAuthToken(id);
           } else {
             return Promise.reject(401);
           }
@@ -109,20 +178,20 @@ router.post('/login', function(req, res){
           });
         })
         .catch((err) => {
-          console.log(err);
           if (err === 401) {
             res.status(401).json({
               error: "Invalid credentials."
             });
           } else {
             res.status(500).json({
-              error: "Failed to fetch user."
+              error: "Failed to fetch user.",
+              err: err
             });
           }
         });
     } else {
       res.status(400).json({
-        error: "Request needs a user ID and password."
+        error: "Request needs a username and password."
       })
     }
   });

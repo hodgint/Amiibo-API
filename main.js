@@ -21,7 +21,7 @@ const mongoDBName = process.env.MONGO_DATABASE;
 const mongoPort = process.env.MONGO_PORT || '27017';
 const mongoUser = process.env.MONGO_INITDB_USERNAME; // issues grabbing these from .env
 const mongoPassword = process.env.MONGO_INITDB_PASSWORD;
-const mongoRootName = 'mongoROOT';//process.env.MONGO_ROOT_USERNAME;// keep getting UNDEFINED
+const mongoRootName = 'mongoROOT';//process.env.MONGO_ROOT_USERNAME;
 const mongoRootPass = 'password1'; //process.env.MONGO_ROOT_PASSWORD; 
 const mongoURL = `mongodb://${mongoRootName}:${mongoRootPass}@${mongoHost}:${mongoPort}/${mongoDBName}?authSource=admin`
 console.log("== Mongo URL:", mongoURL);
@@ -53,12 +53,13 @@ function mongoConnect(){
   mongoClient.connect(mongoURL, { useNewUrlParser: true}, function(err, client){
     console.log("== in mongo connect");
     if(!err){
+
       app.locals.mongoDB = client.db(mongoDBName);
       app.listen(port, function() {
         console.log("== Server is running on port", port);
       });
     }else{
-      console.log("error", err);
+      console.log("error: ", err);
     }
   });
 }
