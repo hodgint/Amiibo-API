@@ -29,7 +29,7 @@ function addUser(user, mongoDB){
 }
 
 function updateUserAmiiboByUsername(user, amiiboID, mongoDB){
-  return new Promise((resolve, reject) =>{
+  return new Promise((resolve, reject) => {
     mongoDB.collection('users').updateOne(
       {
         username: user
@@ -39,9 +39,29 @@ function updateUserAmiiboByUsername(user, amiiboID, mongoDB){
       },
       function(err, res){
         if(err){
+          console.log("Error adding amiibo, err: " + err);
           return reject(err);
         }
-        resolve();
+        resolve(res);
+      });
+    });
+} 
+
+function removeUserAmiiboByUsername(user, amiiboID, mongoDB){
+  return new Promise((resolve, reject) => {
+    mongoDB.collection('users').updateOne(
+      {
+        username: user
+      },
+      {
+        $pull: {amiibo: amiiboID}
+      },
+      function(err, res){
+        if(err){
+          console.log("Error adding amiibo, err: " + err);
+          return reject(err);
+        }
+        resolve(res);
       });
     });
 }
@@ -81,51 +101,6 @@ function getUserByEmail(email, mongoDB, includePassword){
       return Promise.resolve(results[0]);
   });
 }
-
-router.get('/:userID/amiibo', function(req, res){
-    const mongoDB = req.app.locals.mongoDB;
-    const mysqlPool = req.app.locals.mysqlPool;
-    const userID = parseInt(req.params.userID);
-    getUserByID(userID, mongoDB, false)
-    .then((results) => {
-      getUserAmiiboByList(results, mysqlPool)
-      .then((amiibo) => {
-        if(amiibo){
-          res.status.json({amiibo: amiibo});
-        }else{
-          next();
-        }
-      })
-      .catch((err) => {
-        res.status(500).json({
-          error: "Unable to fetch amiibo. Please try again later.",
-          err: err
-        });
-      });
-    })
-    
-});
-
-router.post('/:username/amiibo', function(req, res){
-  const mongoDB = req.app.locals.mongoDB;
-  const username = req.params.username;
-  console.log("Username: " + username);
-  const amiiboID = req.body.amiiboID;
-  updateUserAmiiboByUsername(username, amiiboID, mongoDB)
-  .then((results) => {
-    if(results){
-      res.status.json({results: results});
-    }else{
-      next();
-    }
-  })
-  .catch((err) => {
-    res.status(500).json({
-      error: "Unable to add amiibo. Please try again later",
-      err: err
-    });
-  });
-});
 
 
 router.post('/', function(req, res){
@@ -195,5 +170,95 @@ router.post('/login', function(req, res){
       })
     }
   });
+
+  
+router.get("/:userID", function(req,res){
+  const mongoDB = req.app.locals.mongoDB;
+  const userID = parseInt(req.params.userID);
+  getUserByID(userID, mongoDB, false)
+  .then((results) => {
+    console.log("results: ", results)
+    if(results){
+      res.status(201).json({results: results});
+    }else{
+      //next();
+    }
+  })
+  .catch((err) => {
+    console.log(err);
+    res.status(500).json({
+      error: "Unable to get user. Please try again later"
+    });
+  });
+});
+
+
+router.get('/:username/amiibo', function(req, res){
+    const mongoDB = req.app.locals.mongoDB;
+    const mysqlPool = req.app.locals.mysqlPool;
+    const userID = req.params.username;
+    getUserByUsername(userID, mongoDB, false)
+    .then((results) => {
+      console.log("User " + userID + " amiibo id's: " + results.amiibo);
+      if(results.amiibo){ 
+        getUserAmiiboByList(results.amiibo, mysqlPool)
+        .then((amiibo) => {
+          if(amiibo){
+            res.status(201).json({amiibo: amiibo});
+          }else{
+            next();
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(500).json({
+            error: "Unable to fetch amiibo. Please try again later.",
+          });
+        });
+      }  
+    });
+});
+
+router.post('/:username/amiibo', function(req, res){
+  const mongoDB = req.app.locals.mongoDB;
+  const username = req.params.username;
+  const amiiboID = req.body.amiiboID;
+  updateUserAmiiboByUsername(username, amiiboID, mongoDB)
+  .then((results) => {
+    if(results){
+      res.status(201).json({results: results});
+    }else{
+      console.log("Next");
+      next();
+    }
+  })
+  .catch((err) => {
+    console.log(err);
+    res.status(500).json({
+      error: "Unable to add amiibo. Please try again later",
+      err: err
+    });
+  });
+});
+
+router.delete('/:username/amiibo/:amiiboid', function(req, res){
+  const mongoDB = req.app.locals.mongoDB;
+  const username = req.params.username;
+  const amiiboID = parseInt(req.params.amiiboid);
+  removeUserAmiiboByUsername(username, amiiboID, mongoDB)
+  .then((results) => {
+    if(results){
+      res.status(201).json({results: results})
+    }else{
+      next();
+    }
+  })
+  .catch((err) => {
+    res.status(500).json({
+      error: "Unable to remove amiibo. Please try again later"
+    });
+  });
+});
+
 
 exports.router = router;

@@ -239,11 +239,10 @@ router.delete('/:id', function(req, res, next){
 * Gets amiibo with given list of ids.
 * Used to get owned amiibo of a user.
 */
-function getUserAmiiboByList(IDList, mysqlPool){
-
+function getUserAmiiboByList(idList, mysqlPool){
     return new Promise((resolve, reject)=> {
         mysqlPool.query(
-            'SELECT * FROM amiibo WHERE id in ?', IDList,
+            'SELECT * FROM amiibo WHERE id = ?', idList,
             function(err, results){
                 if(err){
                     reject(err);
