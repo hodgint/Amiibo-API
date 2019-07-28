@@ -130,7 +130,10 @@ router.post('/', function(req, res){
 router.post('/login', function(req, res){
     var id; 
     const mongoDB = req.app.locals.mongoDB;
-    if (req.body && req.body.username && req.body.password) {
+    if (req.body && (req.body.username || req.body.email) && req.body.password) {
+      //if(req.body.email){
+       // getUserByEmail(req.body.email, mongoDB, true)
+      //}
       getUserByUsername(req.body.username, mongoDB, true)
         .then((user) => {
           if (user){
@@ -181,7 +184,7 @@ router.get("/:userID", function(req,res){
     if(results){
       res.status(201).json({results: results});
     }else{
-      //next();
+      next();
     }
   })
   .catch((err) => {
@@ -197,11 +200,17 @@ router.get('/:username/amiibo', function(req, res){
     const mongoDB = req.app.locals.mongoDB;
     const mysqlPool = req.app.locals.mysqlPool;
     const userID = req.params.username;
+    var amiiboArr = [];
+    var i = 0;
     getUserByUsername(userID, mongoDB, false)
     .then((results) => {
-      console.log("User " + userID + " amiibo id's: " + results.amiibo);
       if(results.amiibo){ 
-        getUserAmiiboByList(results.amiibo, mysqlPool)
+        results.amiibo.forEach(function(element){
+          amiiboArr[i] = parseInt(element);
+          i++
+        });
+
+        getUserAmiiboByList(amiiboArr, mysqlPool)
         .then((amiibo) => {
           if(amiibo){
             res.status(201).json({amiibo: amiibo});

@@ -240,9 +240,12 @@ router.delete('/:id', function(req, res, next){
 * Used to get owned amiibo of a user.
 */
 function getUserAmiiboByList(idList, mysqlPool){
-    return new Promise((resolve, reject)=> {
+
+    return new Promise((resolve, reject) => {
+        var tokens = new Array(idList.length).fill('?').join(',');
+        var query = 'SELECT * FROM amiibo WHERE id IN (' + tokens + ')';
         mysqlPool.query(
-            'SELECT * FROM amiibo WHERE id = ?', idList,
+            query, Array.from(idList),
             function(err, results){
                 if(err){
                     reject(err);
@@ -251,7 +254,7 @@ function getUserAmiiboByList(idList, mysqlPool){
                 }
             }
         );
-    })
+    });
 }
 
 exports.router = router;
