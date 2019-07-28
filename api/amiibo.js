@@ -178,18 +178,21 @@ router.get('/:id', function(req, res){
     });
 });
 
-router.get('/name/:name', function(req, res){
+router.get('/name/:amiibo', function(req, res){
     const mysqlPool = req.app.locals.mysqlPool;
-    const name = toString(req.params.name);
+    const name = req.params.amiibo;
+    console.log("Name: " + name);
     getAmiiboByName(name, mysqlPool)
     .then((amiibo) => {
+        console.log("Amiibo: " + amiibo);
         if(amiibo){
-            res.status(200).json(amiibo);
+            res.status(200).json({amiibo: amiibo});
         }else{
             next();
         }
     })
     .catch((err) =>{
+        console.log(err);
         res.status(500).json({
             error: "Unable to fetch Amiibo by Name. Please try again later.",
             err: err
@@ -199,11 +202,15 @@ router.get('/name/:name', function(req, res){
 
 router.get('/series/:series', function(req, res){
     const mysqlPool = req.app.locals.mysqlPool;
-    const series = toString(req.params.series);
+    var series = req.params.series;
+    console.log("Before: " + series);
+    series = series.replace(/-/g, ' ');
+    console.log("After: " + series);
     getAmiiboBySeries(series, mysqlPool)
     .then((amiibo) => {
+        console.log("Amiibo: " + amiibo)
         if(amiibo){
-            res.status(200).json(amiibo);
+            res.status(200).json({amiibo: amiibo});
         }else{
             next();
         }
@@ -211,7 +218,6 @@ router.get('/series/:series', function(req, res){
     .catch((err) =>{
         res.status(500).json({
             error: "Unable to fetch Amiibo by Series. Please try again later.",
-            err: err
         });
     });
 });
